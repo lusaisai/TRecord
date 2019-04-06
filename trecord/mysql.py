@@ -54,7 +54,7 @@ if __name__ == '__main__':
     sql.connect('mysql+pymysql://lusaisai:lusaisai@198.58.115.91/employees')
     print(sql.get_version())
     print(sql.get_current_db())
-    print(sql.query('show tablesaa;'))
+    print(sql.query('show tables;'))
     print(sql.query('select version();'))
     print(sql.query('select * from departments;', 5))
     print(sql.query('select * from employees;', 20))
