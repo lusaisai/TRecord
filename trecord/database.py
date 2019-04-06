@@ -41,7 +41,7 @@ class Database(ABC):
         """
         data = []
         cursor = self.connection.cursor()
-        self.add_row_limit_in_query(query, limit)
+        query = self.add_row_limit_in_query(query, limit)
         cursor.execute(query)
         result = cursor.fetchall()
 
