@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from trecord.error import TRecordError
 import re
 
 
@@ -42,8 +41,7 @@ class Database(ABC):
         """
         data = []
         cursor = self.connection.cursor()
-        if limit:
-            query = query.strip(' ;') + ' limit {};'.format(limit)
+        self.add_row_limit_in_query(query, limit)
         cursor.execute(query)
         result = cursor.fetchall()
 
@@ -53,6 +51,16 @@ class Database(ABC):
         cursor.close()
 
         return data
+
+    @abstractmethod
+    def add_row_limit_in_query(self, query, limit):
+        """This adds a filter into the query to limit the number of rows.
+        It depends on the specific database SQL.
+        This is for performance consideration that fetchmany does not work well with large data set.
+
+        Such as to add a limit 10 or top 10 into the query if it does not have it.
+        """
+        pass
 
     def write(self, query: str) -> int:
         """Run a write(insert, update, delete) query to the database.

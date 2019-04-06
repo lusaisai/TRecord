@@ -1,6 +1,7 @@
 from trecord.database import Database
 from trecord.error import TRecordError
 import pymysql
+import re
 
 
 class PyMySQL(Database):
@@ -22,6 +23,11 @@ class PyMySQL(Database):
             return result
         except pymysql.MySQLError as err:
             raise TRecordError(err)
+
+    def add_row_limit_in_query(self, query, limit):
+        if limit and not re.search(r'\s+limit\s+', query, re.IGNORECASE):
+            query = query.strip(' ;') + ' limit {};'.format(limit)
+        return query
 
     def get_data_type(self, type_code: int) -> str:
         """

@@ -5,6 +5,7 @@ from prompt_toolkit.lexers import PygmentsLexer
 from pygments.lexers.sql import TransactSqlLexer
 from pygments.styles.rainbow_dash import RainbowDashStyle
 import sys
+from tabulate import tabulate
 
 
 class Command:
@@ -49,13 +50,25 @@ class Command:
     def run_query_to_output(self, query):
         try:
             result = self.database.query(query, limit=self.limit)
-            for item in result:
-                print(item)
+            if result:
+                headers = ['{}({})'.format(*item) for item in result[0]]
+                records = result[1:]
+                print(tabulate(records, headers=headers, tablefmt='psql'))
+                print('\n{} rows returned'.format(len(records)))
+            else:
+                print('no rows returned')
         except TRecordError as err:
             print(err)
 
     def run_command(self, command):
         pass
+
+    @staticmethod
+    def help():
+        print('This list of commands:')
+        print('?\tPrint this help document.')
+        print('help\tPrint this help document.')
+        print('<query>\tAny valid SQL query.')
 
     def loop(self):
         query_lines = []
@@ -64,7 +77,9 @@ class Command:
                 this_line = self.session.prompt(self.message)
                 this_line = this_line.strip()
 
-                if this_line.startswith('.'):
+                if this_line in ['help', '?']:
+                    self.help()
+                elif this_line.startswith('.'):
                     self.run_command(this_line)
                 else:
                     query_lines.append(this_line)
