@@ -1,0 +1,5 @@
+pygments
+PyMySQL
+pyodbc
+cx_Oracle
+prompt_toolkit
