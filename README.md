@@ -13,7 +13,7 @@ The systems that it works on and with are,
 ### Installation
 
 ```sh
-$ pip3 install trecord
+$ pip3 install TRecord
 ```
 
 

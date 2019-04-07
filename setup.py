@@ -9,6 +9,11 @@ setup(
     author='lusaisai',
     author_email='lusaisai@163.com',
     description='An Interactive SQL Client',
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+    ],
     install_requires=[
         'pygments',
         'PyMySQL',
