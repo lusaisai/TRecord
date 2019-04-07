@@ -9,6 +9,16 @@ setup(
     author='lusaisai',
     author_email='lusaisai@163.com',
     description='An Interactive SQL Client',
+    install_requires=[
+        'pygments',
+        'PyMySQL',
+        'pyodbc',
+        'cx_Oracle',
+        'prompt_toolkit',
+        'tabulate[widechars]',
+        'tablib',
+        'click'
+    ],
     scripts=[
         'scripts/trecord'
     ]
