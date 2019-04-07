@@ -7,15 +7,15 @@ from datetime import datetime, date
 
 class PyODBCMSSQL(Database):
     """This class implements the database using PyMySQL"""
+
     def __init__(self) -> None:
         super().__init__()
 
     def connect(self, database_url: str):
         super().connect(database_url)
-        self.connection = pyodbc.connect('DSN={};UID={};PWD={}'.format(self.database_url.host,
-        											 				   self.database_url.username,
-        											 				   self.database_url.password)
-        )
+        self.connection = pyodbc.connect(
+                f'DSN={self.database_url.host};UID={self.database_url.username};PWD={self.database_url.password}'
+            )
         if self.database_url.database:
             self.write("USE {}".format(self.database_url.database))
 
@@ -78,7 +78,10 @@ class PyODBCMSSQL(Database):
         if not database:
             database = self.get_current_db()
         ddl = ''
-        ddl += self.query("select table_catalog, table_schema, table_name, column_name, data_type, character_maximum_length, numeric_precision, numeric_scale from {}.INFORMATION_SCHEMA.COLUMNS where table_name = '{}' order by ordinal_position;".format(database, table)).__str__()
+        ddl += self.query(
+            "select table_catalog, table_schema, table_name, column_name, data_type, character_maximum_length, "
+            "numeric_precision, numeric_scale from {}.INFORMATION_SCHEMA.COLUMNS "
+            "where table_name = '{}' order by ordinal_position;".format(database, table)).__str__()
 
         ddl += '\n\n'
 
@@ -97,10 +100,10 @@ class PyODBCMSSQL(Database):
 
 if __name__ == '__main__':
     import sys
+
     sql = PyODBCMSSQL()
     sql.connect(sys.argv[1])
     print(sql.get_version())
     print(sql.get_current_db())
     print(sql.get_ddl('vw_eBay_NiceLinksForSurvey'))
     print(sql.get_ddl('tblREScorecardRule'))
-

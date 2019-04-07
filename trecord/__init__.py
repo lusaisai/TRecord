@@ -3,8 +3,7 @@ from trecord.mysql import PyMySQL
 from trecord.oracle import CxOracle
 from trecord.database import DatabaseURL, Database
 from trecord.error import TRecordError
-
-VERSION = '1.0.0'
+from trecord.command import Command
 
 
 def get_database_by_url(url: str):

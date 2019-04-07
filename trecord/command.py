@@ -1,4 +1,7 @@
-from trecord import Database, get_database_by_url, TRecordError, VERSION
+from trecord.database import Database
+from trecord.error import TRecordError
+from trecord.version import VERSION
+from trecord.mysql import PyMySQL
 from prompt_toolkit import PromptSession, print_formatted_text, HTML
 from prompt_toolkit.styles import Style, style_from_pygments_cls, merge_styles
 from prompt_toolkit.lexers import PygmentsLexer
@@ -153,9 +156,9 @@ class Command:
 
 
 if __name__ == '__main__':
-    # db = get_database_by_url('mysql+pymysql://lusaisai:lusaisai@198.58.115.91/employees')
-    import sys
-    db = get_database_by_url(sys.argv[1])
+    # 'mysql+pymysql://lusaisai:lusaisai@198.58.115.91/employees'
+    db = PyMySQL()
+    db.connect(sys.argv[1])
     cmd = Command(db)
     cmd.loop()
 
