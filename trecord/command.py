@@ -68,7 +68,10 @@ class Command:
             print(tabulate(dataset, headers=dataset.headers, tablefmt='psql'))
             print('\n{} rows returned/limited'.format(dataset.height))
         else:
-            print('no rows returned')
+            if query.lower().startswith('select'):
+                print('no rows returned')
+            else:
+                print()
 
     @staticmethod
     def print_error(content):

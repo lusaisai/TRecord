@@ -52,7 +52,10 @@ class PyMySQL(Database):
         return self.query('select version()')[0][0]
 
     def get_current_db(self) -> str:
-        return self.query('select database()')[0][0]
+        db = self.query('select database()')[0][0]
+        if not db:
+            db = ''
+        return db
 
     def get_tables(self, database=None) -> list:
         if database:
