@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import re
+from tablib import Dataset
 
 
 class Database(ABC):
@@ -28,7 +29,7 @@ class Database(ABC):
         self.database_url = DatabaseURL(database_url)
         self.connection = None
 
-    def read(self, query: str, limit: int = None) -> list:
+    def read(self, query: str, limit: int = None) -> Dataset:
         """Run a read(select) query to the database.
 
         It should return a list of tuples,
@@ -39,14 +40,14 @@ class Database(ABC):
         :param limit: the maximum number of records to return
         :return: a list of tuples
         """
-        data = []
+        data = Dataset()
         cursor = self.connection.cursor()
         query = self.add_row_limit_in_query(query, limit)
         cursor.execute(query)
         result = cursor.fetchall()
 
         if cursor.description:
-            data.append([(d[0], self.get_data_type(d[1])) for d in cursor.description])
+            data.headers = ['{0}({1})'.format(d[0], self.get_data_type(d[1])) for d in cursor.description]
         data.extend(result)
         cursor.close()
 
@@ -90,11 +91,19 @@ class Database(ABC):
             return self.read(query)
 
     @abstractmethod
-    def get_version(self):
+    def get_version(self) -> str:
         pass
 
     @abstractmethod
-    def get_current_db(self):
+    def get_current_db(self) -> str:
+        pass
+
+    @abstractmethod
+    def get_tables(self, database=None) -> list:
+        pass
+
+    @abstractmethod
+    def get_ddl(self, table, database=None):
         pass
 
     @abstractmethod
