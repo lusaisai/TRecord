@@ -137,7 +137,7 @@ class DatabaseURL:
         Extract elements from database url: dialect+driver://username:password@host:port/database
         :return:
         """
-        pattern = re.compile(r'([a-z]+)\+?([a-z]+)?://([a-zA-Z0-9]+):(.+?)@([a-zA-Z0-9.]+):?([0-9]+)?/?([a-zA-Z0-9]+)?')
+        pattern = re.compile(r'([a-z]+)\+?([a-z]+)?://([a-zA-Z0-9_]+):(.+?)@([a-zA-Z0-9._]+):?([0-9]+)?/?([a-zA-Z0-9_]+)?')
         m = pattern.match(self.database_url)
         if m:
             self.dialect, self.driver, self.username, self.password, self.host, self.port, self.database = m.groups()

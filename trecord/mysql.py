@@ -21,7 +21,7 @@ class PyMySQL(Database):
         try:
             result = super().query(query, limit)
             return result
-        except pymysql.MySQLError as err:
+        except pymysql.Error as err:
             raise TRecordError(err)
 
     def add_row_limit_in_query(self, query, limit):

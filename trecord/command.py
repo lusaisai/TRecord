@@ -153,7 +153,9 @@ class Command:
 
 
 if __name__ == '__main__':
-    db = get_database_by_url('mysql+pymysql://lusaisai:lusaisai@198.58.115.91/employees')
+    # db = get_database_by_url('mysql+pymysql://lusaisai:lusaisai@198.58.115.91/employees')
+    import sys
+    db = get_database_by_url(sys.argv[1])
     cmd = Command(db)
     cmd.loop()
 
