@@ -82,6 +82,7 @@ class Command:
         print_formatted_text(HTML('<green>{}</green>'.format(content)))
 
     def run_command(self, command: str):
+        command = command.strip(';')
         if command == '.quit':
             self.exit()
         elif command.startswith('.limit'):
