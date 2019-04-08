@@ -93,12 +93,15 @@ class PyODBCMSSQL(Database):
         full_table_name = column_data[0][1] + '.' + column_data[0][2]
         ddl += f'CREATE TABLE {full_table_name}\n(\n'
         for column in column_data.dict:
-            column = {re.sub(r'\(.*\)', '', key): column[key] for key in column.keys()}  # 'DATA_TYPE(STRING)' -> 'DATA_TYPE'
+            # 'DATA_TYPE(STRING)' -> 'DATA_TYPE'
+            column = {re.sub(r'\(.*\)', '', key): column[key] for key in column.keys()}
+
             column_name = column['COLUMN_NAME']
             if 'char' in column['DATA_TYPE']:
                 column_type = f"{column['DATA_TYPE'].upper()}({column['CHARACTER_MAXIMUM_LENGTH']})"
             else:
                 column_type = column['DATA_TYPE'].upper()
+
             if column['IS_NULLABLE'] == 'NO':
                 column_null = 'NOT NULL'
             else:

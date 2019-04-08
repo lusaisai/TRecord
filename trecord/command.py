@@ -24,8 +24,10 @@ class Command:
         self.style = None
         self.setup_prompt()
         self.keywords = COMMAND_KEYWORDS + SQL_KEYWORDS + [k.lower() for k in SQL_KEYWORDS]
-        self.session = PromptSession(style=self.style, lexer=PygmentsLexer(TransactSqlLexer),
-                                     completer=WordCompleter(self.keywords), complete_while_typing=True)
+        self.session = PromptSession(style=self.style,
+                                     lexer=PygmentsLexer(TransactSqlLexer),
+                                     completer=WordCompleter(self.keywords),
+                                     complete_while_typing=True)
         self.welcome()
 
     def welcome(self):
