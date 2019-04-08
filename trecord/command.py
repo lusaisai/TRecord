@@ -125,7 +125,7 @@ class Command:
         helps.append(['.ddl <[DATABASE.]TABLE>',
                       'Fetch the DDL of the table in current database or other if it is fully qualified.'])
         helps.append(['.quit', 'Quit.'])
-        helps.append(['<QUERY>', 'Any SQL query.'])
+        helps.append(['<QUERY>', 'Any SQL query, can span multiple lines, and end with a ";".'])
         print(tabulate(helps, tablefmt='fancy_grid'))
 
     def loop(self):

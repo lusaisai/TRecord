@@ -77,23 +77,79 @@ class PyODBCMSSQL(Database):
     def get_ddl(self, table, database=None):
         if not database:
             database = self.get_current_db()
-        ddl = ''
-        ddl += self.query(
-            "select table_catalog, table_schema, table_name, column_name, data_type, character_maximum_length, "
-            "numeric_precision, numeric_scale from {}.INFORMATION_SCHEMA.COLUMNS "
-            "where table_name = '{}' order by ordinal_position;".format(database, table)).__str__()
 
-        ddl += '\n\n'
+        # set the database context
+        ddl = f'USE {database};\n\n'
 
+        # column definitions
+        column_data = self.query(
+            "SELECT TABLE_CATALOG, TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, "
+            "NUMERIC_PRECISION, NUMERIC_SCALE, DATETIME_PRECISION, IS_NULLABLE FROM {}.INFORMATION_SCHEMA.COLUMNS "
+            "WHERE TABLE_NAME = '{}' ORDER BY ORDINAL_POSITION;".format(database, table))
+
+        if not column_data.height:
+            return ''
+
+        full_table_name = column_data[0][1] + '.' + column_data[0][2]
+        ddl += f'CREATE TABLE {full_table_name}\n(\n'
+        for column in column_data.dict:
+            column = {re.sub(r'\(.*\)', '', key): column[key] for key in column.keys()}  # 'DATA_TYPE(STRING)' -> 'DATA_TYPE'
+            column_name = column['COLUMN_NAME']
+            if 'char' in column['DATA_TYPE']:
+                column_type = f"{column['DATA_TYPE'].upper()}({column['CHARACTER_MAXIMUM_LENGTH']})"
+            else:
+                column_type = column['DATA_TYPE'].upper()
+            if column['IS_NULLABLE'] == 'NO':
+                column_null = 'NOT NULL'
+            else:
+                column_null = 'NULL'
+
+            ddl += f'\t{column_name} {column_type} {column_null},\n'
+        ddl += ')\n;\n\n'
+
+        # constraints
         constraints_query = """SELECT
-            constraint_name, ordinal_position, table_name, column_name, is_unique, is_primary_key
+            CONSTRAINT_NAME, ORDINAL_POSITION, TABLE_NAME, COLUMN_NAME, IS_UNIQUE, IS_PRIMARY_KEY
             FROM {}.INFORMATION_SCHEMA.KEY_COLUMN_USAGE k
             JOIN SYS.INDEXES i
             ON   k.constraint_name = i.name
             WHERE table_name = '{}'
             ORDER BY constraint_name, ordinal_position
             """.format(database, table)
-        ddl += self.query(constraints_query).__str__()
+        constraints = self.query(constraints_query)
+
+        def get_constraint_ddl(constraint_name, constraint_columns, constraint_pk, constraint_unique):
+            constraint_ddl = ''
+            if constraint_name:  # Wrap up for last constraint
+                constraint_ddl = f'ALTER TABLE {full_table_name} ADD CONSTRAINT {constraint_name} '
+                if constraint_pk:
+                    constraint_ddl += f'PRIMARY KEY ({", ".join(constraint_columns)});\n'
+                elif constraint_unique:
+                    constraint_ddl += f'UNIQUE ({", ".join(constraint_columns)});\n'
+
+            return constraint_ddl
+
+
+        if not constraints.height:
+            ddl += '-- No Constraints Found!\n'
+        else:
+            constraint_name = None
+            constraint_columns = []
+            constraint_pk = False
+            constraint_unique = False
+            for r in constraints:
+                if constraint_name != r[0]:  # A new constraint found
+                    ddl += get_constraint_ddl(constraint_name, constraint_columns, constraint_pk, constraint_unique)
+
+                    # set for the new constraint
+                    constraint_name = r[0]
+                    constraint_columns = [r[3]]
+                    constraint_pk = r[5]
+                    constraint_unique = r[4]
+                else:
+                    constraint_columns.append(r[3])
+
+            ddl += get_constraint_ddl(constraint_name, constraint_columns, constraint_pk, constraint_unique)
 
         return ddl
 
