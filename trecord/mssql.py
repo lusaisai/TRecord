@@ -14,8 +14,8 @@ class PyODBCMSSQL(Database):
     def connect(self, database_url: str):
         super().connect(database_url)
         self.connection = pyodbc.connect(
-                f'DSN={self.database_url.host};UID={self.database_url.username};PWD={self.database_url.password}'
-            )
+            f'DSN={self.database_url.host};UID={self.database_url.username};PWD={self.database_url.password}'
+        )
         if self.database_url.database:
             self.write("USE {}".format(self.database_url.database))
 
@@ -131,7 +131,6 @@ class PyODBCMSSQL(Database):
                     constraint_ddl += f'UNIQUE ({", ".join(constraint_columns)});\n'
 
             return constraint_ddl
-
 
         if not constraints.height:
             ddl += '-- No Constraints Found!\n'

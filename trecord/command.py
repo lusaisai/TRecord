@@ -167,4 +167,3 @@ if __name__ == '__main__':
     db.connect(sys.argv[1])
     cmd = Command(db)
     cmd.loop()
-
