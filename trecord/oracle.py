@@ -65,7 +65,7 @@ class CxOracle(Database):
         return str(type_code)
 
     def get_version(self) -> str:
-        return '\n'.join(self.query('SELECT * FROM V$VERSION').get_col(0))
+        return '\n'.join(self.query('SELECT * FROM V$VERSION').get_col(0)) + '\n'
 
     def get_current_db(self) -> str:
         return ''
