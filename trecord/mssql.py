@@ -37,28 +37,23 @@ class PyODBCMSSQL(Database):
         :param type_code:
         :return:
         """
-        if type_code is int:
-            return 'INTEGER'
-        elif type_code is bool:
-            return 'BOOLEAN'
-        elif type_code is datetime:
-            return 'DATETIME'
-        elif type_code is date:
-            return 'DATE'
-
         mapping = {
             pyodbc.STRING: 'STRING',
             pyodbc.BINARY: 'BINARY',
             pyodbc.NUMBER: 'NUMBER',
             pyodbc.Date: 'DATE',
             pyodbc.Time: 'TIME',
-            pyodbc.Timestamp: 'TIMESTAMP'
+            pyodbc.Timestamp: 'TIMESTAMP',
+            int: 'INTEGER',
+            bool: 'BOOLEAN',
+            datetime: 'DATETIME',
+            date: 'DATE'
         }
         for key in mapping.keys():
             if type_code is key:
                 return mapping[key]
-            else:
-                return str(type_code)
+
+        return str(type_code)
 
     def get_version(self) -> str:
         return self.query('SELECT @@VERSION')[0][0]
