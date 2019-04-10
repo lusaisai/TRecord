@@ -16,8 +16,10 @@ class CxOracle(Database):
             dsn = self.database_url.host
         self.connection = cx_Oracle.connect(user=self.database_url.username,
                                             password=self.database_url.password,
-                                            dsn=dsn
-        )
+                                            dsn=dsn,
+                                            encoding="UTF-8",
+                                            nencoding="UTF-8"
+                                            )
 
     def query(self, query: str, limit: int = None):
         try:
