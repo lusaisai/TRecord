@@ -72,6 +72,14 @@ class PyMySQL(Database):
             database = self.get_current_db()
         return self.query('show create table {}.{};'.format(database, table))[0][1]
 
+    def get_keywords(self):
+        keywords = []
+        keywords.extend(self.query("select table_name from information_schema.tables").get_col(0))
+        keywords.extend(self.query("select schema_name from information_schema.schemata").get_col(0))
+        keywords.extend(self.query("select distinct column_name from information_schema.columns").get_col(0))
+
+        return [keyword.lower() for keyword in keywords]
+
 
 if __name__ == '__main__':
     sql = PyMySQL()

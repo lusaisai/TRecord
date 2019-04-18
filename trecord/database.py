@@ -115,6 +115,14 @@ class Database(ABC):
         """
         pass
 
+    def get_keywords(self):
+        """
+        Return a list of keywords for auto completion
+        :return:
+        """
+        keywords = [keyword.lower() for keyword in self.get_tables()]
+        return keywords
+
     def close(self):
         self.connection.close()
 
