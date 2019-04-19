@@ -74,8 +74,8 @@ class PyMySQL(Database):
 
     def get_keywords(self):
         keywords = []
-        keywords.extend(self.query("select table_name from information_schema.tables").get_col(0))
         keywords.extend(self.query("select schema_name from information_schema.schemata").get_col(0))
+        keywords.extend(self.query("select distinct table_name from information_schema.tables").get_col(0))
         keywords.extend(self.query("select distinct column_name from information_schema.columns").get_col(0))
 
         return [keyword.lower() for keyword in keywords]
