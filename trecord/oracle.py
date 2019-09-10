@@ -134,7 +134,7 @@ class CxOracle(Database):
                     scale = 0
                 column_ddl.append([column_name, 'DECIMAL({}, {})'.format(precision, scale)])
             elif data_type == 'VARCHAR2':
-                column_ddl.append([column_name, 'VARCHAR({})'.format(length)])
+                column_ddl.append([column_name, 'VARCHAR2({})'.format(length)])
             elif data_type.startswith('TIMESTAMP'):
                 column_ddl.append([column_name, 'TIMESTAMP'])
             elif data_type == 'DATE':
