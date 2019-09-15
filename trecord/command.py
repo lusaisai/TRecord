@@ -19,7 +19,7 @@ class Command:
     """This class is an interactive command line client with Database"""
     def __init__(self, database: Database):
         self.database = database
-        self.limit = 10
+        self.limit = 20
         self.message = None
         self.style = None
         self.setup_prompt()
