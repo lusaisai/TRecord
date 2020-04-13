@@ -111,7 +111,7 @@ class Command:
                     try:
                         database, table = arg.split('.')
                     except ValueError:
-                        self.print_error('Invalid argument, format should be [Schema].<Table>')
+                        self.print_error('Invalid Argument.')
                 print(self.database.get_ddl(table, database))
                 print()
             except IndexError:
