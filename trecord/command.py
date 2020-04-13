@@ -108,7 +108,10 @@ class Command:
                 table = arg
                 database = None
                 if '.' in arg:
-                    database, table = arg.split('.')
+                    try:
+                        database, table = arg.split('.')
+                    except ValueError:
+                        self.print_error('Invalid argument, format should be [Schema].<Table>')
                 print(self.database.get_ddl(table, database))
                 print()
             except IndexError:
@@ -167,3 +170,4 @@ if __name__ == '__main__':
     db.connect(sys.argv[1])
     cmd = Command(db)
     cmd.loop()
+

@@ -152,10 +152,12 @@ class CxOracle(Database):
     def get_ddl_from_meta(self, table, database) -> str:
         ddl = str(self.query(f"SELECT dbms_metadata.get_ddl('TABLE', '{table.upper()}', '{database.upper()}') FROM dual")[0][0]) + '\n;\n'
 
-        for index in self.query(f"SELECT distinct index_name FROM all_ind_columns where table_name = '{table.upper()}' and table_owner = '{database.upper()}'").get_col(0):
-            if f'"{index}"' in ddl:
+        for row in self.query(f"SELECT distinct index_owner, index_name FROM all_ind_columns where table_name = '{table.upper()}' and table_owner = '{database.upper()}'"):
+            index_owner = row[0]
+            index_name = row[1]
+            if f'"{index_name}"' in ddl:
                 continue
-            ddl = ddl + '\n' + str(self.query(f"SELECT dbms_metadata.get_ddl('INDEX', '{index}', '{database.upper()}') FROM dual")[0][0]) + '\n;\n'
+            ddl = ddl + '\n' + str(self.query(f"SELECT dbms_metadata.get_ddl('INDEX', '{index_name}', '{index_owner}') FROM dual")[0][0]) + '\n;\n'
 
         return ddl
 
@@ -167,6 +169,7 @@ if __name__ == '__main__':
     sql.connect(sys.argv[1])
     print(sql.get_version())
     print(sql.get_current_db())
-    # print(sql.get_tables('supt_user'))
-    print(sql.get_ddl('ebay_policy', 'supt_user'))
+    print(sql.get_ddl('agg_cs_aps_interval', 'cs_orp'))
+
+
 
