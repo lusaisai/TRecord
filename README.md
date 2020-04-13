@@ -11,6 +11,10 @@ The systems that it works on and with are,
   - MySQL
 
 ### Installation
+```sh
+python3 setup.py sdist bdist_wheel
+pip3 install dist/TRecord-1.0.3.tar.gz
+```
 
 ```sh
 $ pip3 install TRecord
