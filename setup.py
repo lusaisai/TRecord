@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='TRecord',
-    version='1.0.3',
+    version='1.0.4',
     packages=['trecord'],
     url='https://github.com/lusaisai/TRecord',
     license='MIT',

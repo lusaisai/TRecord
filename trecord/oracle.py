@@ -1,10 +1,12 @@
+import cx_Oracle
+
 from trecord.database import Database
 from trecord.error import TRecordError
-import cx_Oracle
 
 
 class CxOracle(Database):
     """This class implements the database using cx_Oracle"""
+
     def __init__(self) -> None:
         super().__init__()
 
@@ -83,16 +85,37 @@ class CxOracle(Database):
 
         return self.query(f"SELECT table_name FROM ALL_TABLES WHERE owner = '{database.upper()}'").get_col(0)
 
+    def get_partitions(self, table, database) -> []:
+        query = f"""
+            SELECT
+            c.COLUMN_NAME,
+            t.PARTITIONING_TYPE
+            FROM ALL_PART_TABLES t
+            JOIN ALL_PART_KEY_COLUMNS c
+            ON   t.OWNER = c.OWNER
+            AND  t.TABLE_NAME = c.NAME
+            WHERE t.TABLE_NAME = '{table.upper()}'
+            AND   t.OWNER = '{database.upper()}'
+            ORDER BY c.COLUMN_POSITION
+            """
+        return self.query(query).dict
+
     def get_ddl(self, table, database=None) -> str:
         if not database:
             database = self.database_url.username
 
         ddl = None
+        partitions = self.get_partitions(table, database)
 
-        if self.check_dict_privs():
+        if self.check_dict_privs() and not partitions:
             ddl = self.get_ddl_from_meta(table, database)
         else:
             ddl = self.create_ddl(table, database)
+            if partitions:
+                ddl += f'\nPartition Info:\n'
+                for item in partitions:
+                    ddl = ddl + \
+                          f'PARTITION BY {item["PARTITIONING_TYPE(STRING)"]} ({item["COLUMN_NAME(STRING)"]})' + "\n"
 
         return ddl
 
@@ -100,7 +123,8 @@ class CxOracle(Database):
         ddl = f'CREATE TABLE {database}.{table} (\n'
 
         metadata = self.query(f"select column_name, data_type, data_length, data_precision, data_scale, nullable \
-            from all_tab_columns where upper(table_name) = upper('{table}') and upper(owner) = upper('{database}') order by column_id;")
+            from all_tab_columns where upper(table_name) = upper('{table}') and upper(owner) = upper('{database}') "
+                              f"order by column_id;")
 
         for index, column in enumerate(self.column_list_for_ddl(metadata)):
             if index == 0:
@@ -110,20 +134,26 @@ class CxOracle(Database):
 
         ddl += ')\n;\n\n'
 
-        for index_name, unique in self.get_indexes(table, database):
+        for index_owner, index_name, unique in self.get_indexes(table, database):
             if unique == 'NONUNIQUE':
-                ddl += f"CREATE INDEX {index_name} ON {database}.{table} ({','.join(self.get_index_columns(index_name))});\n\n"
+                ddl += f"CREATE INDEX {index_owner}.{index_name} ON {database}.{table} " \
+                       f"({','.join(self.get_index_columns(index_name, index_owner))});\n\n"
             else:
-                ddl += f"CREATE UNIQUE INDEX {index_name} ON {database}.{table} ({','.join(self.get_index_columns(index_name))});\n\n"
+                ddl += f"CREATE UNIQUE INDEX {index_owner}.{index_name} ON {database}.{table} " \
+                       f"({','.join(self.get_index_columns(index_name, index_owner))});\n\n"
 
         return ddl
 
     def get_indexes(self, table, database):
-        return self.query(f"select INDEX_NAME, UNIQUENESS from all_indexes  where upper(table_name) = upper('{table}') and upper(owner) = upper('{database}')")
+        return self.query(
+            f"select OWNER AS INDEX_OWNER, INDEX_NAME, UNIQUENESS "
+            f"from all_indexes where upper(table_name) = upper('{table}')"
+            f" and upper(owner) = upper('{database}')")
 
-    def get_index_columns(self, index):
-        return self.query(f"select COLUMN_NAME from all_ind_columns  where INDEX_NAME = '{index}'").get_col(0)
-
+    def get_index_columns(self, index, owner):
+        return self.query(
+            f"select COLUMN_NAME from all_ind_columns"
+            f" where index_owner = '{owner}' and INDEX_NAME = '{index}'").get_col(0)
 
     def column_list_for_ddl(self, metadata):
         column_ddl = []
@@ -150,14 +180,20 @@ class CxOracle(Database):
         return column_ddl
 
     def get_ddl_from_meta(self, table, database) -> str:
-        ddl = str(self.query(f"SELECT dbms_metadata.get_ddl('TABLE', '{table.upper()}', '{database.upper()}') FROM dual")[0][0]) + '\n;\n'
+        ddl = str(
+            self.query(f"SELECT dbms_metadata.get_ddl('TABLE', '{table.upper()}', '{database.upper()}') FROM dual")[0][
+                0]) + '\n;\n'
 
-        for row in self.query(f"SELECT distinct index_owner, index_name FROM all_ind_columns where table_name = '{table.upper()}' and table_owner = '{database.upper()}'"):
+        for row in self.query(
+                f"SELECT distinct index_owner, index_name FROM all_ind_columns "
+                f"where table_name = '{table.upper()}' and table_owner = '{database.upper()}'"):
             index_owner = row[0]
             index_name = row[1]
             if f'"{index_name}"' in ddl:
                 continue
-            ddl = ddl + '\n' + str(self.query(f"SELECT dbms_metadata.get_ddl('INDEX', '{index_name}', '{index_owner}') FROM dual")[0][0]) + '\n;\n'
+            ddl = ddl + '\n' + str(
+                self.query(f"SELECT dbms_metadata.get_ddl('INDEX', '{index_name}', '{index_owner}') FROM dual")[0][
+                    0]) + '\n;\n'
 
         return ddl
 
@@ -170,6 +206,3 @@ if __name__ == '__main__':
     print(sql.get_version())
     print(sql.get_current_db())
     print(sql.get_ddl('agg_cs_aps_interval', 'cs_orp'))
-
-
-
