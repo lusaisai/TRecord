@@ -8,7 +8,7 @@ from prompt_toolkit.lexers import PygmentsLexer
 from pygments.lexers.sql import TransactSqlLexer
 from pygments.styles.rainbow_dash import RainbowDashStyle
 from pygments import highlight
-from pygments.formatters.terminal256 import TerminalTrueColorFormatter
+from pygments.formatters.terminal256 import Terminal256Formatter
 import sys
 from tabulate import tabulate
 from tablib import Dataset
@@ -115,7 +115,7 @@ class Command:
                     except ValueError:
                         self.print_error('Invalid Argument.')
                 ddl = self.database.get_ddl(table, database)
-                print(highlight(ddl, TransactSqlLexer(), TerminalTrueColorFormatter()))
+                print(highlight(ddl, TransactSqlLexer(), Terminal256Formatter()))
                 print()
             except IndexError:
                 self.print_error('Table is required.')
